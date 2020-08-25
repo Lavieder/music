@@ -1,0 +1,88 @@
+@font-face {
+  font-family: 'iconfont';  /* project id 1961119 */
+  src: url('//at.alicdn.com/t/font_1961119_5qukws6edrg.eot');
+  src: url('//at.alicdn.com/t/font_1961119_5qukws6edrg.eot?#iefix') format('embedded-opentype'),
+  url('//at.alicdn.com/t/font_1961119_5qukws6edrg.woff2') format('woff2'),
+  url('//at.alicdn.com/t/font_1961119_5qukws6edrg.woff') format('woff'),
+  url('//at.alicdn.com/t/font_1961119_5qukws6edrg.ttf') format('truetype'),
+  url('//at.alicdn.com/t/font_1961119_5qukws6edrg.svg#iconfont') format('svg');
+}
+.iconfont{
+  font-family:"iconfont" !important;
+  font-size: 25px;
+  font-style:normal;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke-width: 0.2px;
+  -moz-osx-font-smoothing: grayscale;
+}
+html,body{
+  width: 100%;    
+  height: 100%;   
+  position: absolute; 
+  left: 0;
+  top: 0; 
+  overflow: hidden;   
+  overflow-y: auto;
+  &::-webkit-scrollbar{ width:0px }
+}
+body {
+  font-family: PingFang SC,STHeitiSC-Light,Helvetica-Light,arial,sans-serif,Droid Sans Fallback!important;
+}
+.active{
+  color: #ee0a24!important;
+}
+.van-hairline--bottom::after,
+[class*=van-hairline]::after,
+.van-cell::after {
+  border: 0!important;
+}
+
+.van-image {
+  margin-right: .5rem;
+}
+.van-index-anchor {
+  padding: 0!important;
+}
+.singer,
+.todaysong,
+.rankboard {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+}
+
+.song {
+  .van-cell-group {
+    padding: 0 15px;
+    box-sizing: border-box;
+    .van-cell {
+      padding: 0;
+      margin: 10px 0;
+      border-radius: 10px;
+      .van-image__img {
+        border-radius: 10px;
+      }
+      .van-cell__label {
+        span {
+          font-size: 0.7rem;
+          color: #a2a2a2;
+        }
+      }
+      .van-cell__value {
+        height: 2.8125rem;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-right: 0.5rem;
+        line-height: 2.8125rem;
+        .iconfont {
+          font-size: 2rem;
+          color: #fc4156;
+        }
+      }
+    }
+  }
+}
