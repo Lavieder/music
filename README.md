@@ -1,4 +1,5 @@
 # music
+vue_cli+vue+vue-router+less+vuex+axios+Vant-ui+better-scroll
 
 ## Project setup
 ```
@@ -22,3 +23,4 @@ yarn lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
