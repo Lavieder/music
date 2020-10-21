@@ -33,9 +33,7 @@ export default {
   methods: {
     getGedanData () {
       if (!this.gedan.gdid) {
-        this.$router.push({
-          path: '/gedan'
-        })
+        this.$router.back()
         return
       }
       this.axios.post('/api/gedan/gddetail', this.gedan).then((res) => {

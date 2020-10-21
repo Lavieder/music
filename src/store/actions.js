@@ -67,3 +67,8 @@ export const insertSong = ({ commit, state }, song) => {
   commit(types.SET_FULL_SCREEN, true)
   commit(types.SET_PLAYING_STATE, true)
 }
+
+// 登录信息
+export const Login = ({ commit }, user) => {
+  commit(types.SET_LOGININFO, user)
+}

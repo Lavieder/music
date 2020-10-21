@@ -11,11 +11,15 @@
             </van-uploader>
           </template>
         </van-field>
-        <van-field class="nickName" :value="loginInfo[0].nickName" label="昵称" input-align="right" clickable/>
-        <van-field class="sex" :value="loginInfo[0].sex" label="性别" input-align="right" clickable/>
-        <van-field name="datetimePicker" :value="loginInfo[0].birth" label="生日" input-align="right" clickable @click="showPick = true"/>
-        <van-field name="area" :value="loginInfo[0].area" label="地区" input-align="right" clickable @click="showArea = true"/>
-        <van-field ref="textarea" class="textarea" type="textarea" placeholder="还没有签名" autosize rows="1" :value="loginInfo[0].intro" label="个性签名" :input-align="textdire" clickable/>
+        <van-field class="nickName" v-model="getNickName" label="昵称" input-align="right" clickable/>
+        <van-field class="sex" v-model="getSex" label="性别" input-align="right" clickable/>
+        <van-field name="datetimePicker" v-model="getBirth" label="生日" input-align="right" clickable @click="showPick = true"/>
+        <van-field name="area" v-model="getArea" label="地区" input-align="right" clickable @click="showArea = true"/>
+        <van-field ref="textarea" v-model="getIntro" class="textarea" type="textarea" placeholder="还没有签名" autosize rows="1" label="个性签名" :input-align="textdire" clickable/>
+        <div class="button">
+          <van-button type="info" round @click="exitUser()">退出</van-button>
+          <van-button type="primary" round @click="updateUserInfo()">保存</van-button>
+        </div>
       </van-form>
       <van-popup v-model="showPick" position="bottom">
         <van-datetime-picker type="date" :min-date="minDate" @cancel="showPick = false" :formatter="formatter"/>
@@ -29,7 +33,7 @@
 
 <script>
 import goBackHeader from '../../../Secondary/goBackHeader'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapMutations } from 'vuex'
 import { areaList } from '../../../../JS/Area'
 export default {
   components: { goBackHeader },
@@ -41,7 +45,15 @@ export default {
       showArea: false,
       minDate: new Date(1970, 1, 1),
       areaList,
-      textdire: 'right'
+      textdire: 'right',
+      upDI: {
+        face: '',
+        nickName: '',
+        sex: '',
+        birth: '',
+        area: '',
+        intro: ''
+      }
     }
   },
   mounted () {
@@ -50,9 +62,52 @@ export default {
   computed: {
     ...mapGetters([
       'loginInfo'
-    ])
+    ]),
+    getNickName: {
+      get: function () {
+        return this.loginInfo[0].nickName
+      },
+      set: function (val) {
+        this.upDI.nickName = val
+      }
+    },
+    getSex: {
+      get: function () {
+        return this.loginInfo[0].sex
+      },
+      set: function (val) {
+        this.upDI.sex = val
+      }
+    },
+    getBirth: {
+      get: function () {
+        return this.loginInfo[0].birth
+      },
+      set: function (val) {
+        this.upDI.birth = val
+      }
+    },
+    getArea: {
+      get: function () {
+        return this.loginInfo[0].area
+      },
+      set: function (val) {
+        this.upDI.area = val
+      }
+    },
+    getIntro: {
+      get: function () {
+        return this.loginInfo[0].intro
+      },
+      set: function (val) {
+        this.upDI.intro = val
+      }
+    }
   },
   methods: {
+    ...mapMutations({
+      setLoginInfo: 'SET_LOGININFO'
+    }),
     formatter (type, val) {
       if (type === 'year') {
         return `${val}年`
@@ -64,12 +119,29 @@ export default {
       return val
     },
     txtdire () {
+      if (!this.loginInfo[0]) {
+        this.$router.back()
+        return
+      }
       const signLeg = this.$refs.textarea.value.length
       if (signLeg > 30) {
         this.textdire = 'left'
       } else {
         this.textdire = 'right'
       }
+    },
+    exitUser () {
+      if (this.loginInfo.length) {
+        this.$store.commit('SET_UNAME', '')
+        this.$store.commit('SET_TOKEN', '')
+        this.setLoginInfo('')
+      }
+      this.$router.back()
+    },
+    updateUserInfo () {
+      this.axios.post('/api/user/upui', { upUI: this.upUI, uName: this.loginInfo[0].uName }).then((res) => {
+        console.log(res)
+      })
     }
   }
 
@@ -146,6 +218,15 @@ export default {
               margin: 0.5rem 0;
             }
           }
+        }
+      }
+      .button {
+        padding: 1rem;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: space-between;
+        .van-button {
+          width: 48%;
         }
       }
     }

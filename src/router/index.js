@@ -26,11 +26,11 @@ const routes = [
     name: 'main',
     component: Main,
     children: [
-      { path: '/rec/:gdid', component: GedanDetail },
-      { path: '/my/:gdid', component: GedanDetail },
-      { path: '/user/detail', component: MyInfo }
+      { path: '/rgd/:gdid', component: GedanDetail },
+      { path: '/mgd/:gdid', component: GedanDetail }
     ]
   },
+  { path: '/user/detail', component: MyInfo },
   {
     path: '/todayrec',
     name: 'todaySong',

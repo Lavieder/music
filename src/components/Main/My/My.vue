@@ -2,13 +2,11 @@
   <div class="my" ref="my">
     <div class="nick_info" :style="{ backgroundImage: 'url('+getFaceCover+')' }">
       <div class="face_nick">
-        <img :src="getFace" alt="my" @click="loginInfo.length ? '' : toLogin()">
-        <router-link :to="loginInfo.length ? '/user/detail' : ''">
-          <div class="toMyInfo">
-            <span class="nick">{{ loginInfo.length ? loginInfo[0].nickName : '未登录' }}</span>
-            <i class="iconfont icon-xiangyou"></i>
-          </div>
-        </router-link>
+        <img :src="getFace" alt="my" @click="toLogin()">
+        <div class="toMyInfo" @click="toLogin()">
+          <span class="nick">{{ loginInfo.length ? loginInfo[0].nickName : '未登录' }}</span>
+          <i class="iconfont icon-xiangyou"></i>
+        </div>
         <div class="guanz_fens" v-if="loginInfo.length">
           <span class="name">关注 <span class="num"> 3 </span></span> |
           <span class="name">粉丝 <span class="num"> 5 </span></span>
@@ -35,8 +33,12 @@
                 <span class="num" v-if="i === 1">1</span>
               </span>
             </span>
-            <span class="gdtr">
-              <span> <i class="iconfont icon-piliang"></i></span>
+            <span class="gdtr" @click="piLiang" v-if="userGedan.length">
+              <span class="quanxuan" v-if="piliang" @click.stop="allChecked()">
+                <span>{{ this.allSelect ? '取消' : '全选' }}</span>
+              </span>
+              <span v-if="piliang"><i class="iconfont icon-shanc shanc" @click.stop="delGedan()"></i></span>
+              <span :class="piliang ? '' : 'plzk'"><i class="iconfont icon-piliang"></i></span>
             </span>
           </div>
         </div>
@@ -48,6 +50,9 @@
                   <div class="text_num">
                     <div>{{ item.gdTitle }}</div>
                     <div class="num">{{ item.song.length }}首</div>
+                </div>
+                <div class="piliang" v-if="piliang">
+                  <input type="checkbox" :value="item.gdid" @click.stop="onlyChecked(item.gdid, $event)" ref="checkbox">
                 </div>
               </div>
             </div>
@@ -79,10 +84,17 @@
                 <div>这是一个真的歌单123</div>
                 <div class="num">5首</div>
               </div>
+              <div class="piliang" v-if="piliang">
+                <input type="checkbox" v-model="allSelect">
+              </div>
             </div>
             <div class="gditem wei" v-if="!loginInfo.length">
               <span>快来登录啊！</span>
             </div>
+          </div>
+          <div :class="delNotice" class="del-notice" ref="delNotice">
+            <span v-if="message">{{ message.success !== ' ' ? message.success : message.fail }}</span>
+            <span v-if="message.success == '' && message.fail == ''">{{ checkedList.length == 0 ? '未选择歌单' : '' }}</span>
           </div>
         </div>
       </div>
@@ -99,6 +111,10 @@ export default {
     userGedan: {
       type: Array,
       default: () => []
+    },
+    message: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -110,25 +126,133 @@ export default {
       show: false,
       inputTxt: '',
       xianzhiNum: 20,
-      title: ['我的歌单', '收藏歌单']
+      title: ['我的歌单', '收藏歌单'],
+      piliang: false,
+      offsetTop: 0,
+      allSelect: false,
+      checkedList: [],
+      delShow: false
+    }
+  },
+  mounted () {
+    // console.log(this.$parent.active)
+    if (this.$parent.active === 0) {
+      window.addEventListener('scroll', () => {
+        this.watchScroll()
+      }, true)
+    } else {
+      return ''
     }
   },
   computed: {
     ...mapGetters([
-      'loginInfo'
+      'loginInfo',
+      'currentUser'
     ]),
     getFace () {
       return this.loginInfo.length ? '/storage/' + this.loginInfo[0].faceUrl : '/storage/face/default.jpg'
     },
     getFaceCover () {
       return this.loginInfo.length ? '/storage/' + this.loginInfo[0].faceUrl : ''
+    },
+    piliangDel () {
+      return this.piliang ? 'iconfont icon-shanc shanc' : 'iconfont icon-piliang'
+    },
+    delNotice () {
+      return this.message.success !== '' ? this.showMessage() : ''
     }
   },
   methods: {
+    // 页面滚动监听导航
+    watchScroll () {
+      this.offsetTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+      const parentNav = this.$parent.$refs
+      const percent = this.offsetTop / 108
+      if (parentNav.nav) {
+        parentNav.nav.style.background = `rgba(255,255,255, ${percent})`
+      } else {
+        return
+      }
+      if (this.$parent.active === 0 && parentNav.mytitle && parentNav.rectitle) {
+        if (this.offsetTop > 60) {
+          parentNav.mytitle.style.color = 'rgba(0,0,0)'
+          parentNav.rectitle.style.color = 'rgba(0,0,0, 0.5)'
+        } else {
+          parentNav.mytitle.style.color = '#fff'
+          parentNav.rectitle.style.color = 'rgba(255,255,255, 0.5)'
+        }
+      } else if (this.$parent.active === 1 && parentNav.mytitle && parentNav.rectitle) {
+        parentNav.nav.style.background = 'rgba(255,255,255, 1)'
+      }
+      if (this.offsetTop > 108 && parentNav.nav) {
+        parentNav.nav.style.background = 'rgba(255,255,255, 1)'
+      }
+    },
     toLogin () {
-      this.$router.push({
-        path: '/login'
+      if (this.loginInfo.length) {
+        this.$router.push({
+          path: '/user/detail'
+        })
+      } else {
+        this.$router.push({
+          path: '/login'
+        })
+      }
+    },
+    // 批量删除
+    piLiang () {
+      this.piliang = !this.piliang
+    },
+    // 单击复选框
+    onlyChecked (gdid, e) {
+      // this.allSelect = !this.allSelect
+      if (e.target.checked) {
+        this.checkedList.push(gdid)
+      } else {
+        const gdidIndex = this.checkedList.indexOf(gdid)
+        this.checkedList.splice(gdidIndex, 1)
+      }
+      if (this.checkedList.length === this.userGedan.length) {
+        this.allSelect = true
+      } else {
+        this.allSelect = false
+      }
+      console.log(this.checkedList)
+      console.log(this.checkedList.length)
+      console.log(this.userGedan.length)
+    },
+    // 全选
+    allChecked () {
+      this.allSelect = !this.allSelect
+      const _this = this
+      this.$refs.checkbox.forEach(function (ele) {
+        ele.checked = !ele.checked
+        if (ele.checked) {
+          _this.checkedList.push(parseInt(ele.value))
+        } else {
+          const gdidIndex = _this.checkedList.indexOf(parseInt(ele.value))
+          _this.checkedList.splice(gdidIndex, 1)
+        }
       })
+      console.log(this.checkedList)
+    },
+    // 点击删除按钮，向后端发送对应的歌单gdid
+    delGedan () {
+      if (this.checkedList.length === 0) {
+        this.showMessage()
+      } else {
+        this.$emit('delGedan', this.checkedList)
+      }
+    },
+    // 显示成功/失败提示文字
+    showMessage () {
+      this.$refs.delNotice.style.opacity = 1
+      this.$refs.delNotice.style.zIndex = 1
+      this.$refs.delNotice.style.transitionDuration = '500ms'
+      setTimeout(() => {
+        this.$refs.delNotice.style.opacity = 0
+        this.$refs.delNotice.style.zIndex = -1
+      }, 1500)
     },
     getClass (i) {
       return this.act === i ? 'act' : 'def'
@@ -142,6 +266,7 @@ export default {
     select (item) {
       this.$emit('selectItem', item)
     },
+    // 创建歌单
     createMyGedan (inputTxt) {
       this.$emit('createMyGedan', inputTxt)
     },
@@ -169,7 +294,7 @@ export default {
 
 <style lang="less">
   .my {
-    height: 100vh;
+    width: 100vw;
     font-size: 0.9em;
     position: relative;
     .nick_info::before {
@@ -243,9 +368,6 @@ export default {
     .my_music {
       height: 11rem;
       font-size: 0.9rem;
-      // background: #fff;
-      // border-radius: 10px;
-      // box-shadow: 0px 2px 3px rgba(66, 66, 66, 0.5);
       .my_ms {
         padding: 0 1rem;
         box-sizing: border-box;
@@ -267,7 +389,9 @@ export default {
     }
     .my_gedan {
       .my_gd {
-        padding: 1rem;
+        .title {
+          padding: 0 1rem;
+        }
         .act {
           color: #000000 !important;
           font-size: 1em;
@@ -287,19 +411,43 @@ export default {
               margin: 0 1rem 0 0.2rem;
             }
           }
+          .gdtr {
+            .shanc {
+              font-size: 20px;
+              margin: 0 15px;
+            }
+            .plzk {
+              color: #a7a7a7;
+              vertical-align: top;
+            }
+            .quanxuan {
+              vertical-align: top;
+              font-size: 16px;
+            }
+            .icon-piliang {
+              vertical-align: top;
+            }
+          }
         }
         .gdlist {
+          position: relative;
+          .wdgd {
+            position: relative;
+          }
           .wei {
             font-size: 1.05em;
             height: 3rem;
             border: 1px solid #7f7f7f;
             justify-content: center;
+            padding: 0!important;
+            margin: 1rem;
+            box-sizing: border-box;
           }
           .gditem {
             display: flex;
             align-items: center;
             border-radius: 5px;
-            margin-bottom: 10px;
+            padding: 0.5rem 1rem;
             img {
               display: inline-block;
               height: 3.3rem;
@@ -336,40 +484,73 @@ export default {
                 color: #858585;
               }
             }
-          }
-          .van-dialog__header {
-            font-size: 0.95em;
-          }
-          .van-dialog__content {
-            width: 100%;
-            position: relative;
-            .inputTxt {
-              height: 2rem;
-              display: block;
-              width: 85%;
-              margin: 1rem auto;
-              outline: 0;
-              border: 0;
-              border-bottom: 1px solid #525252;
-            }
-            .xianzhi {
-              position: absolute;
-              bottom: 0.6rem;
-              right: 3.4rem;
-              font-size: 0.92em;
-              color: #474747;
-            }
-            .xianzhi2 {
-              right: 2.2rem;
-            }
-            .shanc {
-              position: absolute;
-              bottom: 0.2rem;
-              right: 1.3rem;
-              .iconfont {
-                font-size: 1.7em;
+            .piliang {
+              flex: 1;
+              text-align: right;
+              input {
+                width: 20px;
+                height: 20px;
+                margin: 0;
+                vertical-align: middle;
+                position: relative;
+                z-index: 200;
               }
             }
+          }
+          .van-dialog {
+            top: 50%;
+            .van-dialog__header {
+              font-size: 0.95em;
+            }
+            .van-dialog__content {
+              position: relative;
+              width: 90%;
+              margin: 0 auto;
+              border-bottom: 1px solid #525252;
+              .inputTxt {
+                height: 2rem;
+                display: block;
+                width: 83%;
+                outline: 0;
+                border: 0;
+              }
+              .xianzhi {
+                position: absolute;
+                bottom: 0.6rem;
+                right: 1.8rem;
+                font-size: 0.92em;
+                color: #474747;
+              }
+              .xianzhi2 {
+                right: 1.3rem;
+              }
+              .shanc {
+                position: absolute;
+                bottom: 0.2rem;
+                right: 0;
+                .iconfont {
+                  font-size: 1.7em;
+                }
+              }
+            }
+          }
+          .del-notice {
+            position: absolute;
+            top: 2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.6);
+            padding: 12px;
+            box-sizing: border-box;
+            border-radius: 15px;
+            color: #ffffff;
+            z-index: -1;
+            opacity: 0;
+            transition: all .5s;
+          }
+          .del-show {
+            z-index: 1;
+            opacity: 1;
           }
         }
       }

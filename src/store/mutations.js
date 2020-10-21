@@ -33,8 +33,30 @@ const mutations = {
   [types.SET_LOADING] (state, loading) {
     state.loading = loading
   },
-  [types.SET_LOGININFO] (state, loginInfo) {
-    state.loginInfo = loginInfo
+  // [types.SET_LOGININFO] (state, loginInfo) {
+  //   state.loginInfo = loginInfo
+  // },
+  [types.SET_UNAME] (state, uName) {
+    state.uName = uName
+    localStorage.setItem('uName', uName)
+  },
+  [types.SET_UNAME] (state, uName) {
+    state.uName = uName
+    localStorage.setItem('uName', uName)
+  },
+  [types.SET_LOGININFO] (state, user) {
+    if (user) {
+      console.log(user)
+      state.loginInfo = user.user
+      state.token = user.tk
+      localStorage.setItem('user', JSON.stringify(user.user))
+      localStorage.setItem('token', user.tk)
+    } else if (user === null) {
+      localStorage.setItem('user', null)
+      localStorage.setItem('token', '')
+      state.loginInfo = null
+      state.token = ''
+    }
   }
 }
 

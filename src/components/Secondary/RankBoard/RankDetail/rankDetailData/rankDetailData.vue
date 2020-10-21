@@ -10,14 +10,14 @@
         <div class="icon_span play_all">
           <div class="left">
             <i class="iconfont icon-zanting"></i>
-            <span class="all">播放全部</span><span class="count">(共{{ rankDetail[0].song.length }}首)</span>
+            <span class="all">播放全部</span><span class="count">(共{{ rankDetail.length }}首)</span>
           </div>
           <div class="right">
             <i class="iconfont icon-piliang"></i>
           </div>
         </div>
         <van-cell-group>
-          <van-cell center clickable v-for="(song, i) of rankDetail[0].song" :key="i" @click="select(song, i)">
+          <van-cell center clickable v-for="(song, i) of rankDetail" :key="i" @click="select(song, i)">
             <template #icon>
               <span class="index">{{ i + 1 }}</span>
             </template>
@@ -27,7 +27,7 @@
             <template #label>
               <div class="icon_span">
                 <i class="iconfont icon-sq"></i>
-                <span>{{ song.singer.sgName.match(/[\u4e00-\u9fa5,a-zA-Z,\w\s\w,a-zA-z\.+]+/)[0] }} - {{ song.album.alName }}</span>
+                <span>{{ song.singer.sgName.match(/[\u4e00-\u9fa5,a-zA-Z,\w\s\w,a-zA-z\.+]+/)[0] }} - {{song.album.alName }}</span>
               </div>
             </template>
             <template>

@@ -36,7 +36,7 @@ Axios.interceptors.request.use(
       // 捆绑token等信息，后端中间件
       config.headers = {
         'x-token': localStorage.token,
-        'x-uid': localStorage.sid,
+        'x-uName': localStorage.uName,
         'Content-type': 'application/x-www-form-urlencoded;charset=utf-8;'
       }
     }
@@ -63,6 +63,16 @@ Axios.interceptors.response.use((response) => {
 
 // 添加路由卫士（路由拦截）
 router.beforeEach((to, from, next) => {
+  if (to.path === '/login') {
+    next()
+  } else {
+    const userInfo = localStorage.getItem('userInfo')
+    if (userInfo === 'null') {
+      next('/login')
+    } else {
+      next()
+    }
+  }
   // 使用路由的meta参数，显示页面标题
   if (to.meta.title) {
     document.title = to.meta.title

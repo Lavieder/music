@@ -24,8 +24,8 @@ export default {
       'rank'
     ]),
     rkBgImage () {
-      if (this.songs.length) {
-        return this.songs[0].coverUrl
+      if (this.rankDetail.length) {
+        return this.rankDetail[0].coverUrl
       }
       return ''
     }
@@ -35,14 +35,36 @@ export default {
   },
   methods: {
     getRankDetail () {
+      if (!this.rank.rbid) {
+        this.$router.back()
+        return
+      }
       this.axios.post('/api/rank/rkdetail', this.rank).then((res) => {
         if (res.data) {
-          this.rankDetail = res.data
-          this.songs = res.data[0].song
+          this.rankDetail = this.concatRank(res.data)
+          if (this.rankDetail[0].song.length !== 0) {
+            this.rankDetail = this.rankDetail[0].song
+            this.songs = this.rankDetail
+          } else {
+            return ''
+          }
         } else {
-          return 0
+          return ''
         }
       })
+    },
+    // 拼接榜单标题
+    concatRank (data) {
+      const newRank = []
+      const rank = { lbid: this.rank.rbid, lbName: this.rank.rbTitle, song: '' }
+      if (data[0].lbid) {
+        return data
+      }
+      if (data[0].lbid === undefined) {
+        rank.song = data
+      }
+      newRank.push(rank)
+      return newRank
     },
     selectItem (song, index) {
       this.selectPlay({

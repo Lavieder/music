@@ -21,3 +21,11 @@ export const SET_RANK = 'SET_RANK'
 export const SET_LOADING = 'SET_LOADING'
 
 export const SET_LOGININFO = 'SET_LOGININFO'
+
+export const SET_UNAME = 'SET_UNAME'
+
+export const SET_TOKEN = 'SET_TOKEN'
+
+export const SET_CURRENT_USER = 'SET_CURRENT_USER'
+
+export const SET_IS_LOGIN = 'SET_IS_LOGIN'

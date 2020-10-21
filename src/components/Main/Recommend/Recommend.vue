@@ -2,7 +2,7 @@
   <div class="recommend" ref="recommend">
     <swiper :banner-list="bannerList" ref="banner"/>
     <nav-class :nav-class="navClass" ref="navclass"/>
-    <rec-gedan :recGedanList="recGedanList" :title="gedantitle" @selectGedan="selectGedan" ref="recgedan"/>
+    <rec-gedan :recGedanList="recGedanList" :title="gedantitle" @selectItem="selectGedan" ref="recgedan"/>
     <rec-song :recSongList="recSongList" :title="songtitle" @selectSong="selectSong" ref="recsong"/>
   </div>
 </template>
@@ -56,7 +56,7 @@ export default {
     },
     selectGedan (gedan) {
       this.$router.push({
-        path: `/rec/${gedan.gdid}`
+        path: `/rgd/${gedan.gdid}`
       })
       this.setGedan(gedan)
     },
@@ -82,8 +82,7 @@ export default {
 
 <style lang="less">
   .recommend {
-    width: 100%;
-    height: 100%;
+    width: 100vw;
     padding-top: 50px;
   }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="player" v-show="playList.length>0">
+  <div class="player" v-show="playList.length>0" ref="player">
     <transition name="normal">
       <div class="normal-player" v-show="fullScreen">
         <div class="top">
@@ -159,6 +159,7 @@ export default {
       setTimeout(() => {
         this.$refs.audio.play()
         this.getLyrics()
+        this.addPlayNum()
       })
     },
     playing (newPlaying) {
@@ -172,6 +173,18 @@ export default {
     this.touch = {}
   },
   methods: {
+    // 播放量增加
+    addPlayNum () {
+      if (this.playing) {
+        this.axios.post('/api/song/increpn', this.currentSong).then((res) => {
+          if (res.data === '1') {
+            return res.data
+          }
+        })
+      } else {
+        return 0
+      }
+    },
     back () {
       this.setFullScreen(false)
     },
@@ -261,6 +274,7 @@ export default {
     updateTime (e) {
       this.currentTime = e.target.currentTime
     },
+    // 初始化时间
     formatTime (interval) {
       interval = Math.floor(interval)
       const minute = this.fillInO(Math.floor(interval / 60))

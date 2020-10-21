@@ -84,20 +84,13 @@ create table sexClass(
   sexName varchar(10) not null
 ) comment '性别分类表';
 
--- 8.歌曲分类表(songClass) (取消该功能)
-create table songClass(
-  scid int primary key auto_increment,
-  scName varchar(10) not null
-) comment '歌曲分类表';
-
 -- 8.标签表(label)
 create table label(
   lbId int primary key auto_increment,
-  lbName varchar(10) not null,
-  sgid int references singer(sgid)
+  lbName varchar(10) not null
 ) comment '标签表';
 
--- 9.评论表(comment)
+-- 9.评论表(comment) // 为使用
 create table comment(
   comid int primary key auto_increment,
   title varchar(30) not null,
@@ -108,14 +101,14 @@ create table comment(
   sid int references song(sid)
 )comment '评论表';
 
--- 10.关注关系表(atten)
+-- 10.关注关系表(atten)  // 未使用
 create table atten(
   attid int primary key auto_increment,
   uid int references user(uid),
   sgid int references singer(sgid)
 ) comment '关注关系表';
 
--- 11.下载关系表(download) (暂时取消该功能)
+-- 11.下载关系表(download) // 未使用
 create table download(
   downId int primary key auto_increment,
   uid int references user(uid),
@@ -177,6 +170,34 @@ create table RankSong
   sid int references song(sid),
   rbid int references rankboard(rbid)
 ) comment '排行歌曲关系表';
+
+-- 18.歌曲标签关系表(songLabel)
+create table songLabel(
+  slbid int primary key auto_increment,
+  sid int references song(sid),
+  lbid int references label(lbid)
+) comment '歌曲标签关系表';
+
+-- 19.用户歌单关系表(userGedan)
+create table userGedan(
+  ugid int primary key auto_increment,
+  uid int references user(uid),
+  gdid int references gedan(gdid)
+) comment '用户歌单关系表';
+
+--20.喜欢的歌曲表(favouriteSong)
+create table favouriteSong(
+  fsid int primary key auto_increment,
+  uid int references user(uid),
+  sid int references song(sid)
+) comment '喜欢的歌曲表';
+
+--21.收藏歌单表(collectGedan)
+create table collectGedan(
+  cgid int primary key auto_increment,
+  uid int references user(uid),
+  sid int references song(sid)
+) comment '喜欢的歌曲表';
 
 
 insert into recommend values 

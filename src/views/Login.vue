@@ -31,7 +31,7 @@
 <script>
 import Vue from 'vue'
 import { Toast } from 'vant'
-import { mapMutations } from 'vuex'
+import { mapMutations, mapActions } from 'vuex'
 import goBackHeader from '../components/Secondary/goBackHeader'
 Vue.use(Toast)
 export default {
@@ -63,9 +63,12 @@ export default {
       this.axios.post('/api/login', this.formData).then((res) => {
         if (res.data.isOk === '1') {
           this.userInfo = res.data.user
-          localStorage.uName = res.data.user[0].uName
-          localStorage.token = res.data.tk
+          // localStorage.uName = res.data.user[0].uName
+          // localStorage.token = res.data.tk
           this.setLoginInfo(res.data.user)
+          this.Login(res.data)
+          // this.setUName(res.data.user[0].uName)
+          // this.setToken(res.data.tk)
           this.$router.push('/')
         } else {
           console.log(res)
@@ -78,7 +81,12 @@ export default {
     },
     ...mapMutations({
       setLoginInfo: 'SET_LOGININFO'
-    })
+      // setUName: 'SET_UNAME',
+      // setToken: 'SET_TOKEN'
+    }),
+    ...mapActions([
+      'Login'
+    ])
   }
 }
 </script>
@@ -88,6 +96,8 @@ export default {
     width: 100vw;
     height: 100vh;
     background-color: #f6f6f6;
+    position: relative;
+    z-index: 185;
     .gobackheader {
       .van-nav-bar {
         background-color: transparent;

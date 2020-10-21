@@ -30,7 +30,7 @@ export default {
   },
   methods: {
     select (gedan) {
-      this.$emit('selectGedan', gedan)
+      this.$emit('selectItem', gedan)
     }
   }
 }

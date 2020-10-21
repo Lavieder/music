@@ -31,9 +31,7 @@ export default {
   methods: {
     getSingerInfo () {
       if (!this.singer.sgid) {
-        this.$router.push({
-          path: '/singer'
-        })
+        this.$router.back()
         return
       }
       this.axios.post('/api/sgdetail/detail', this.singer).then((res) => {

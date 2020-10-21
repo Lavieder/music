@@ -16,7 +16,7 @@
           </div>
         </template>
         <template>
-          <i class="iconfont">&#xe753;</i>
+          <i :class="playLaba"></i>
         </template>
       </van-cell>
     </van-cell-group>
@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 export default {
   props: {
     recSongList: {
@@ -31,6 +32,15 @@ export default {
       default: () => []
     },
     title: String
+  },
+  computed: {
+    playLaba () {
+      return this.playing ? 'iconfont icon-laba' : 'iconfont icon-bofang3-copy'
+    },
+    ...mapGetters([
+      'playing',
+      'currentSong'
+    ])
   },
   methods: {
     select (song, index) {

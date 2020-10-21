@@ -7,9 +7,9 @@
         <div class="rbUpdate">{{ item.rbUpdate }}</div>
       </div>
       <div class="csong">
-        <div class="sitem"><span>1.</span>歌曲1</div>
-        <div class="sitem"><span>2.</span>歌曲2</div>
-        <div class="sitem"><span>3.</span>歌曲3</div>
+        <div class="sitem" v-for="(rksong, idx) of item.songs" :key="idx">
+          <span>{{idx + 1}}. </span>{{ rksong.sName }}<span class="rkSinger" v-if="rksong.singer"> - {{rksong.singer.sgName}}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -79,6 +79,14 @@ export default {
         .sitem {
           height: 2rem;
           line-height: 2rem;
+          width: 13.5rem;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          .rkSinger {
+            font-size: 0.5em;
+            color: #8b8b8b;
+          }
         }
       }
     }

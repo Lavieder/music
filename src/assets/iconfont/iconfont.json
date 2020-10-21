@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "9141618",
+      "name": "laba",
+      "font_class": "laba",
+      "unicode": "e608",
+      "unicode_decimal": 58888
+    },
+    {
       "icon_id": "8993606",
       "name": "返回 左箭头 向左 上一步 线性",
       "font_class": "xiangyou",
