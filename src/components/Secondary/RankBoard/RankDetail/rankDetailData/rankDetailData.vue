@@ -1,9 +1,9 @@
 <template>
   <scroll class="rankdetaildata" :data="rankDetail">
-    <div>
-      <div class="detail" v-if="rankDetail[0]">
+    <div ref="rankdetaildata" @touchmove="rankDataMove">
+      <div class="detail" v-if="rankDetail[0]" ref="detail">
         <div class="sgbgimg" v-lazy:background="'/storage/'+rkBgImage">
-          <div class="bgmask" v-lazy:background="'/storage/'+rankDetail[0].rbCover"></div>
+          <div class="bgmask" v-lazy:background="'/storage/'+rank.rbCover"></div>
         </div>
       </div>
       <div class="song" v-if="rankDetail[0]" ref='list'>
@@ -31,7 +31,7 @@
               </div>
             </template>
             <template>
-              <i class="iconfont">&#xe753;</i>
+              <i :class="playing && (song.sid === currentSong.sid) ? 'iconfont icon-laba' : 'iconfont icon-bofang3-copy'"></i>
             </template>
           </van-cell>
         </van-cell-group>
@@ -41,6 +41,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import Scroll from '../../../../scroll/scroll'
 import { playListMixin } from '../../../../../JS/mixin'
 export default {
@@ -56,7 +57,24 @@ export default {
       default: ''
     }
   },
+  computed: {
+    ...mapGetters([
+      'rank',
+      'playing',
+      'currentSong'
+    ])
+  },
   methods: {
+    // 监听导航
+    rankDataMove () {
+      const detailTop = this.$refs.detail.offsetHeight
+      const scrollHeight = this.$refs.detail.getBoundingClientRect().top
+      const backHeader = this.$parent.$el.children[0].offsetHeight
+      const percent = Math.abs(scrollHeight / (detailTop - backHeader))
+      if (scrollHeight <= 0) {
+        this.$parent.$el.children[0].style.background = `rgba(252,65,86,${percent})`
+      }
+    },
     select (song, i) {
       this.$emit('selectItem', song, i)
     },
@@ -94,7 +112,7 @@ export default {
           background-repeat: no-repeat!important;
           background-position: center center!important;
           background-size: 100% 100%!important;
-          opacity: 0.1;
+          opacity: 0.4;
         }
       }
     }

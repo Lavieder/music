@@ -30,14 +30,16 @@ Axios.interceptors.request.use(
     // 针对post方法进行编码，否则发送不出去
     if (config.method === 'post') {
       // qs 请求字符串，stringify() 对数据进行编码
-      config.data = qs.stringify(config.data)
+      if (config.flag !== 'face') {
+        config.data = qs.stringify(config.data)
+      }
     }
     if (localStorage.token) {
       // 捆绑token等信息，后端中间件
       config.headers = {
         'x-token': localStorage.token,
         'x-uName': localStorage.uName,
-        'Content-type': 'application/x-www-form-urlencoded;charset=utf-8;'
+        'Content-type': 'application/x-www-form-urlencoded;charset=utf-8'
       }
     }
     store.commit('SET_LOADING', true)
@@ -66,8 +68,8 @@ router.beforeEach((to, from, next) => {
   if (to.path === '/login') {
     next()
   } else {
-    const userInfo = localStorage.getItem('userInfo')
-    if (userInfo === 'null') {
+    const userInfo = localStorage.getItem('user')
+    if (userInfo === null) {
       next('/login')
     } else {
       next()

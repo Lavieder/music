@@ -33,30 +33,20 @@ const mutations = {
   [types.SET_LOADING] (state, loading) {
     state.loading = loading
   },
-  // [types.SET_LOGININFO] (state, loginInfo) {
-  //   state.loginInfo = loginInfo
-  // },
-  [types.SET_UNAME] (state, uName) {
-    state.uName = uName
-    localStorage.setItem('uName', uName)
+  [types.SET_LOGININFO] (state, loginInfo) {
+    state.loginInfo = loginInfo
   },
-  [types.SET_UNAME] (state, uName) {
-    state.uName = uName
-    localStorage.setItem('uName', uName)
+  [types.SET_PLAY_HISTORY] (state, playHistory) {
+    state.playHistory = playHistory
   },
-  [types.SET_LOGININFO] (state, user) {
-    if (user) {
-      console.log(user)
-      state.loginInfo = user.user
-      state.token = user.tk
-      localStorage.setItem('user', JSON.stringify(user.user))
-      localStorage.setItem('token', user.tk)
-    } else if (user === null) {
-      localStorage.setItem('user', null)
-      localStorage.setItem('token', '')
-      state.loginInfo = null
-      state.token = ''
-    }
+  [types.SET_FAVORITE_LIST] (state, favoriteList) {
+    state.favoriteList = favoriteList
+  },
+  [types.SET_COLLECT_LIST] (state, collectGedanList) {
+    state.collectGedanList = collectGedanList
+  },
+  [types.SET_CREATE_LIST] (state, createGedanList) {
+    state.createGedanList = createGedanList
   }
 }
 

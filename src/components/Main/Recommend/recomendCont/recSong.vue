@@ -16,7 +16,7 @@
           </div>
         </template>
         <template>
-          <i :class="playLaba"></i>
+          <i :class="playing && (song.sid === currentSong.sid) ? 'iconfont icon-laba' : 'iconfont icon-bofang3-copy'" ></i>
         </template>
       </van-cell>
     </van-cell-group>
@@ -34,9 +34,6 @@ export default {
     title: String
   },
   computed: {
-    playLaba () {
-      return this.playing ? 'iconfont icon-laba' : 'iconfont icon-bofang3-copy'
-    },
     ...mapGetters([
       'playing',
       'currentSong'

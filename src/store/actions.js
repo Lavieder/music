@@ -68,7 +68,61 @@ export const insertSong = ({ commit, state }, song) => {
   commit(types.SET_PLAYING_STATE, true)
 }
 
+// 删除歌曲列表歌曲
+export const deleteSong = function ({ commit, state }, song) {
+  const playlist = state.playList.slice()
+  const sequenceList = state.sequenceList.slice()
+  let currentIndex = state.currentIndex
+  const pIndex = findIndex(playlist, song)
+  playlist.splice(pIndex, 1)
+  const sIndex = findIndex(sequenceList, song)
+  sequenceList.splice(sIndex, 1)
+  if (currentIndex > pIndex || currentIndex === playlist.length) {
+    currentIndex--
+  }
+  commit(types.SET_PLAY_LIST, playlist)
+  commit(types.SET_SEQUENCE_LIST, sequenceList)
+  commit(types.SET_CURRENT_INDEX, currentIndex)
+
+  if (!playlist.length) {
+    commit(types.SET_PLAYING_STATE, false)
+  } else {
+    commit(types.SET_PLAYING_STATE, true)
+  }
+}
+// 清空播放列表
+export const deleteSongList = function ({ commit }) {
+  commit(types.SET_CURRENT_INDEX, -1)
+  commit(types.SET_PLAY_LIST, [])
+  commit(types.SET_SEQUENCE_LIST, [])
+  commit(types.SET_PLAYING_STATE, false)
+}
+
 // 登录信息
 export const Login = ({ commit }, user) => {
   commit(types.SET_LOGININFO, user)
+}
+
+// 增加 / 删除最近播放列表歌曲
+export const recentlyPlay = function ({ commit, state }, { song, type, checkedList }) {
+  const newRecentlyPlay = state.playHistory.slice()
+  if (type === 'add') {
+    const index = findIndex(newRecentlyPlay, song)
+    if (index > -1) {
+      newRecentlyPlay.splice(index, 1)
+    }
+    newRecentlyPlay.unshift(song)
+    commit(types.SET_PLAY_HISTORY, newRecentlyPlay)
+  } else {
+    const newPlaySid = newRecentlyPlay.map((item) => {
+      return item.sid
+    })
+    for (const sid of checkedList) {
+      const index = newPlaySid.indexOf(sid)
+      if (index > -1) {
+        newRecentlyPlay.splice(index, 1)
+      }
+    }
+    localStorage.setItem('playHistory', JSON.stringify(newRecentlyPlay))
+  }
 }

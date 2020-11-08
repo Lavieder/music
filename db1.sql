@@ -133,6 +133,7 @@ create table gedan(
   uid int references user(uid)
 ) comment '歌单表';
 
+
 -- 14.歌单歌曲关系表(gedanSong) 
 create table gedanSong(
   gsid int primary key auto_increment,
@@ -182,7 +183,8 @@ create table songLabel(
 create table userGedan(
   ugid int primary key auto_increment,
   uid int references user(uid),
-  gdid int references gedan(gdid)
+  gdid int references gedan(gdid),
+  source enum('创建', '收藏')
 ) comment '用户歌单关系表';
 
 --20.喜欢的歌曲表(favouriteSong)
@@ -192,12 +194,6 @@ create table favouriteSong(
   sid int references song(sid)
 ) comment '喜欢的歌曲表';
 
---21.收藏歌单表(collectGedan)
-create table collectGedan(
-  cgid int primary key auto_increment,
-  uid int references user(uid),
-  sid int references song(sid)
-) comment '喜欢的歌曲表';
 
 
 insert into recommend values 
@@ -421,3 +417,20 @@ song {
 
 }
 
+gedan {
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/1.jpg', '「国语情歌」岁月匆匆，往事难留', '有人说，只有伤过的人才听得懂情歌。只有经历过爱，经历过离别，才能在情歌里嗅到似曾相识的味道和感伤。情歌还是老的好，像陈酿的美酒，承受了岁月的揉搓，留下的，便是最深情和动人的部分。', '77821145');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/2.jpg', '【入耳沉醉】 猝不及防的心动', '每天，都要去做一些枯燥的事 一些让人心烦的事 可是又不得不去做 一切都在重复 都在复制，粘贴……… 为何不去做那些让人愉快的事呢', '1564884');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/3.jpg', '「硬核战歌」无音乐不游戏', '致幻电音振聋发聩，最适合与ONLINE玩家产生醒脑的共鸣，燃爆妳的GAME小宇宙。 玩游戏时听可以引起舒适感， 和耳机党们一起沉浸游戏世界。', '39512145');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/4.jpg', '暮色似水，思念成海', '暮色隐约，氤氲在青黛色的天空中。思念在内心深处晕染，才染了眉梢，又上了心头。暮色似水，对你的思念成海', '53453');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/5.jpg', '人生走在路上，愿你心花路放', '新的一天新的开始，用一个最好的状态面对今天。一个人走在路上总会有些胆怯，听听这里的歌，不柔不躁，勇往直前。', '4323');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/6.jpg', '假日派对｜欧美清凉小调', '夏天是清凉的世界。我们穿着颜色各异的游泳衣，跳进碧蓝的泳池里，真是又冰又凉，我们尽情地在水里游啊，跳啊，笑啊，好不痛快。', '1543');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/7.jpg', '白噪音|雷雨，伴你入睡，享受自然界的音乐', '淅沥沥，伴你入眠，最舒适的自然声音，难得听到的狂风骤雨电闪雷鸣', '21256');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/8.jpg', '宁静的夜晚仰望星空|信仰', '我还要再编制一个美丽的神话吗?秋夜清凉，举头望月，飘渺的思绪散入茫茫夜空。信马由缰，一步一步的步入秋夜。廊桥的故事，泊成清凌凌的月光。青葱的岁月，乳化成缕缕青烟。尘埃洗尽，秋梦无痕，一切的一切都烟消云散。', '12545');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/9.jpg', '跟自己说晚安，天总是会亮的', '城市很大，有的人开心，有的人失落， 每个人都有属于自己的故事， 夜深了，就道声晚安与往事说再见吧。 听完这些歌，我们就说晚安。 “愿你夜夜好梦”', '7893567');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/10.jpg', '深夜音“药”： 激活你的学习脑细胞', '喜欢深夜写作业?又害怕深夜的你脑子不好使?为何不来点音乐去刺激的脑细胞活跃起来让你的效率大大的提升一下呢?', '4517');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/11.jpg', '中国风 · 月下寄相思', '举头望明月，低头思佳人…… 愿我如星君如月，夜夜流光相皎洁', '9371');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/12.jpg', '油管旅拍Vlog | 备好行囊，上路！', '趁阳光正好，趁微风不噪，趁繁花还未开至荼蘼，趁现在还年轻，还可以走很长很长的路，还能诉说很深很深的思恋，去寻找那些曾出现在梦境中的路径、山峦和田野吧。', '352167');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/13.jpg', '民谣不是陈词滥调，只是故事发了酵', '民谣，一听就是一个故事。 唱的人普通，听的人平凡。 喜欢那种感同身受，热爱那些词藻。 用歌曲说话，用歌曲讲故事， 因为被赋予旋律所以才更容易打动人心。', '451351');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/14.jpg', '忘忧纯音 · 沦陷静谧雨中', '总有一些时刻，情绪莫名的低迷。 时光一缕缕走过，波澜不惊中少了些许的小确幸。 望着窗外细雨，听着宁静弦音，满眼都是清新与柔软，心情慢慢舒适起来。', '46512');
+  INSERT INTO `db_music`.`gedan` (`gdCover`, `gdTitle`, `gdIntro`, `gdPlayNum`) VALUES ('gedanCover/15.jpg', '不屈摇滚丨天若塌，便再撑起一片天', '电音和摇滚，我认为最为带感的两种音乐类型，但电音的激情我总算在孤独时听，而对于摇滚，传达的是更为真实的力量与激励，管它什么困难，用力前进！', '45636');
+}

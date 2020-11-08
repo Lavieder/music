@@ -3,7 +3,7 @@
     <div class="singer">
       <go-back-header :title="title"></go-back-header>
       <singer-class :areaList="areaList" :sexList="sexList"/>
-      <singer-list :singerList="getSinger" @select="selectSinger"/>
+      <singer-list :singerList="getSinger" :sgList="sgList" @select="selectSinger" @getSingerList="getSingerList"/>
       <router-view></router-view>
     </div>
   </transition>
@@ -24,8 +24,11 @@ export default {
       sex: '',
       area: '',
       title: '歌手分类',
-      page: 1,
-      allSingerLoaded: false
+      sgList: {
+        page: 1,
+        allSinger: false,
+        isSingerOk: false
+      }
     }
   },
   mounted () {
@@ -45,8 +48,17 @@ export default {
       })
     },
     getSingerList () {
-      this.axios.get('/api/singer/sglist', { params: { page: this.page } }).then((res) => {
-        this.singerList = res.data.data
+      const oldList = this.singerList
+      this.axios.get('/api/singer/sglist', { params: { page: this.sgList.page } }).then((res) => {
+        this.singerList = oldList.concat(res.data.data)
+        ++this.sgList.page
+        if (this.singerList.length === res.data.total) {
+          this.sgList.allSinger = true
+          this.sgList.isSingerOk = true
+          setTimeout(() => {
+            this.sgList.allSinger = false
+          }, 3000)
+        }
       })
     },
     selectSinger (singer) {
@@ -81,4 +93,15 @@ export default {
 </script>
 
 <style lang="less">
+  .singer {
+    .singerlode {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      text-align: center;
+      padding: 15px 0;
+      background-image: linear-gradient(to top,#ffffff, transparent);
+      z-index: 1;
+    }
+  }
 </style>

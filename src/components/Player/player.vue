@@ -59,11 +59,12 @@
             <div class="icon i-right" :class="disableClass">
               <i class="iconfont icon-xiayishou-copy" @click="next"></i>
             </div>
-            <div class="icon i-right">
-              <i class="iconfont icon-xihuan_off"></i>
+            <div class="icon i-right" @click.stop="handleLike()">
+              <i :class="getMyLikeIcon(currentSong)"></i>
             </div>
           </div>
         </div>
+        <div class="please-login" v-show="loginShow" ref="pleaseLogin">{{ msg }}</div>
       </div>
     </transition>
     <transition name="mini">
@@ -84,25 +85,36 @@
             </progress-circle>
           </div>
         </div>
-        <div class="control">
+        <div class="control" @click.stop="openPlayList">
           <i class="iconfont icon-bofangliebiao"></i>
         </div>
       </div>
     </transition>
-    <audio :src="'/storage/'+currentSong.playUrl" ref="audio" @error="error" @timeupdate="updateTime" @ended="end"></audio>
+    <PlayList ref="playList"></PlayList>
+    <audio :src="'/storage/'+currentSong.playUrl" ref="audio" @play="ready" @error="error" @timeupdate="updateTime" @ended="end"></audio>
+    <!--
+    <audio src="http://aqqmusic.tc.qq.com/amobile.music.tc.qq.com/C400004Fs2FP1EvZYc.m4a?guid=1384837525&vkey=7333F7B715F7DCFB705D2C2CAFF8BF3658F469D735405A3BEA716677A720293E0ECFFD55C30809CBD997208B41E12DC35AE2AAF7E8D47891&uin=0&fromtag=38"
+    ref="audio" @play="ready" @error="error" @timeupdate="updateTime" @ended="end">
+    </audio>
+    -->
   </div>
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
+import { prefixStyle } from '../../JS/dom'
 import ProgressBar from './ProgressBar/ProgressBar'
 import ProgressCircle from './ProgressCircle/ProgressCircle'
 import { playMode } from '../../JS/playMode'
 import Scroll from '../scroll/scroll'
+import PlayList from './PlayList/PlayList'
 import Lyric from 'lyric-parser'
 
+const transform = prefixStyle('transform')
+const transitionDuration = prefixStyle('transitionDuration')
+
 export default {
-  components: { ProgressBar, ProgressCircle, Scroll },
+  components: { ProgressBar, ProgressCircle, Scroll, PlayList },
   data () {
     return {
       songReady: false,
@@ -113,7 +125,11 @@ export default {
       currentLyrics: null,
       currentLineNum: 0,
       currentShow: 'cd',
-      playLyric: ''
+      playLyric: '',
+      loginShow: false,
+      msg: '',
+      isAddFavorite: false,
+      likeState: false
     }
   },
   computed: {
@@ -140,7 +156,10 @@ export default {
       'playing',
       'currentIndex',
       'mode',
-      'sequenceList'
+      'sequenceList',
+      'loginInfo',
+      'favoriteList',
+      'playHistory'
     ]),
     // 进度条百分比
     percent () {
@@ -149,18 +168,23 @@ export default {
   },
   watch: {
     currentSong (newSong, oldSong) {
+      if (!newSong.sid) {
+        return
+      }
       if (newSong.sid === oldSong.sid) {
         return
       }
       if (this.currentLyrics) {
         this.currentLyrics.stop()
+        this.currentTime = 0
       }
+      clearTimeout(this.timer)
       // this.$nextTick 确保后台播放请求js, 所以换成setTimeout
-      setTimeout(() => {
+      this.timer = setTimeout(() => {
         this.$refs.audio.play()
         this.getLyrics()
         this.addPlayNum()
-      })
+      }, 1000)
     },
     playing (newPlaying) {
       const audio = this.$refs.audio
@@ -173,18 +197,6 @@ export default {
     this.touch = {}
   },
   methods: {
-    // 播放量增加
-    addPlayNum () {
-      if (this.playing) {
-        this.axios.post('/api/song/increpn', this.currentSong).then((res) => {
-          if (res.data === '1') {
-            return res.data
-          }
-        })
-      } else {
-        return 0
-      }
-    },
     back () {
       this.setFullScreen(false)
     },
@@ -196,9 +208,88 @@ export default {
       setPlayingState: 'SET_PLAYING_STATE',
       setCurrentIndex: 'SET_CURRENT_INDEX',
       setPlayMode: 'SET_PLAY_MODE',
-      setPlayList: 'SET_PLAY_LIST'
+      setPlayList: 'SET_PLAY_LIST',
+      setFavoriteList: 'SET_FAVORITE_LIST'
     }),
+    ...mapActions([
+      'recentlyPlay'
+    ]),
 
+    // 播放量增加
+    addPlayNum () {
+      if (this.playing) {
+        this.axios.post('/api/song/increpn', { sid: this.currentSong.sid }).then((res) => {
+          if (res.data) {
+            this.recentlyPlay({
+              song: this.currentSong,
+              type: 'add',
+              checkedList: ''
+            })
+            localStorage.setItem('playHistory', JSON.stringify(this.playHistory))
+            return res.data
+          }
+        })
+      } else {
+        return 0
+      }
+    },
+
+    // 添加到我喜欢
+    handleLike () {
+      if (!this.loginInfo) {
+        this.msg = '你还未登录'
+      } else {
+        this.axios.post('/api/user/adfs', { uid: this.loginInfo.uid, sid: this.currentSong.sid, isLike: !this.isAddFavorite })
+          .then((res) => {
+            if (res.data[0] === 'add') {
+              this.msg = '添加成功'
+              this.setFavoriteList(res.data[1][0].song)
+            } else if (res.data[0] === 'remove') {
+              this.msg = '删除成功'
+              this.setFavoriteList(res.data[1][0].song)
+            } else {
+              this.msg = '删除失败'
+            }
+            this.getMyLikeIcon(this.currentSong)
+          })
+      }
+      this.tipMsg()
+    },
+    // 判断歌曲是否是我喜欢的
+    isMyLike (song) {
+      const index = this.favoriteList.findIndex((item) => {
+        return item.sid === song.sid
+      })
+      return index > -1
+    },
+    getMyLikeIcon (song) {
+      if (this.isMyLike(song)) {
+        this.isAddFavorite = true
+        return 'iconfont icon-xihuan_on myLike'
+      } else {
+        this.isAddFavorite = false
+        return 'iconfont icon-xihuan_off'
+      }
+    },
+    // 提示消息
+    tipMsg () {
+      this.loginShow = true
+      this.$refs.pleaseLogin.style.opacity = 1
+      this.$refs.pleaseLogin.style.zIndex = 1
+      this.$refs.pleaseLogin.style.transitionDuration = '500ms'
+      setTimeout(() => {
+        this.$refs.pleaseLogin.style.opacity = 0
+        this.$refs.pleaseLogin.style.zIndex = -1
+      }, 1500)
+      setTimeout(() => {
+        this.msg = ' '
+      }, 2000)
+    },
+
+    // 弹出播放列表
+    openPlayList () {
+      this.$refs.playList.show()
+    },
     // 播放暂停
     togglePlay () {
       if (!this.songReady) {
@@ -266,6 +357,9 @@ export default {
       } else {
         this.next()
       }
+    },
+    ready () {
+      this.songReady = true
     },
     error () {
       this.songReady = true
@@ -355,6 +449,8 @@ export default {
     // 左右切换歌词
     middleTouchStart (el) {
       this.touch.initiated = true
+      // 用来判断是否是一次移动
+      this.touch.moved = false
       this.touch.startX = el.touches[0].pageX
       this.touch.startY = el.touches[0].pageY
     },
@@ -367,13 +463,16 @@ export default {
       if (Math.abs(deltaY) > Math.abs(deltaX)) {
         return
       }
+      if (!this.touch.moved) {
+        this.touch.moved = true
+      }
       const left = this.currentShow === 'cd' ? 0 : -window.innerWidth
       const offsetWidth = Math.min(0, Math.max(-window.innerWidth, left + deltaX))
       this.touch.percent = Math.abs(offsetWidth / window.innerWidth)
-      this.$refs.lyricsList.$el.style.transform = `translateX(${offsetWidth}px)`
-      this.$refs.lyricsList.$el.style.transitionDuration = 0
+      this.$refs.lyricsList.$el.style[transform] = `translateX(${offsetWidth}px)`
+      this.$refs.lyricsList.$el.style[transitionDuration] = 0
       this.$refs.middleL.style.opacity = 1 - this.touch.percent
-      this.$refs.middleL.style.transitionDuration = 0
+      this.$refs.middleL.style[transitionDuration] = 0
     },
     middleTouchEnd () {
       let offsetWidth
@@ -396,10 +495,11 @@ export default {
         }
       }
       const time = 300
-      this.$refs.lyricsList.$el.style.transform = `translate3d(${offsetWidth}px,0,0)`
-      this.$refs.lyricsList.$el.style.transitionDuration = `${time}ms`
+      this.$refs.lyricsList.$el.style[transform] = `translate3d(${offsetWidth}px,0,0)`
+      this.$refs.lyricsList.$el.style[transitionDuration] = `${time}ms`
       this.$refs.middleL.style.opacity = opacity
-      this.$refs.middleL.style.transitionDuration = `${time}ms`
+      this.$refs.middleL.style[transitionDuration] = `${time}ms`
+      this.touch.initiated = false
     }
   }
 }
@@ -607,8 +707,27 @@ export default {
           }
           .i-right {
             text-align: left;
+            .myLike {
+              color: #ee0a24;
+              transition: all 0.3s ease;
+            }
           }
         }
+      }
+      .please-login {
+        position: absolute;
+        left: 50%;
+        bottom: 22%;
+        transform: translateX(-50%);
+        background-color: rgba(0,0,0,0.6);
+        padding: 12px;
+        box-sizing: border-box;
+        border-radius: 15px;
+        color: #ffffff;
+        z-index: -1;
+        opacity: 0;
+        font-size: 0.85em;
+        transition: all .5s;
       }
       &.normal-enter-active,
       &.normal-leave-active {

@@ -14,7 +14,10 @@
 </template>
 
 <script>
+import { prefixStyle } from '../../../JS/dom'
 const progressBtnWidth = 13
+const transform = prefixStyle('transform')
+
 export default {
   props: {
     percent: {
@@ -44,17 +47,22 @@ export default {
       this._triggerPercent()
     },
     progressClick (e) {
-      this._offset(e.offsetX)
+      e.stopPropagation()
+      const rect = this.$refs.progressBar.getBoundingClientRect()
+      const offsetWidth = e.pageX - rect.left
+      // this._offset(e.offsetX)
+      this._offset(offsetWidth)
       this._triggerPercent()
     },
     _triggerPercent () {
       const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
       const percent = this.$refs.progress.clientWidth / barWidth
+      // console.log(percent)
       this.$emit('percentChange', percent)
     },
     _offset (offsetWidth) {
       this.$refs.progress.style.width = `${offsetWidth}px`
-      this.$refs.progressBtn.style.transform = `translateX(${offsetWidth}px)`
+      this.$refs.progressBtn.style[transform] = `translate3d(${offsetWidth}px,0,0)`
     }
   },
   watch: {

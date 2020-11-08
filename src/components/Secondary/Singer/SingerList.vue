@@ -1,5 +1,5 @@
 <template>
-  <div class="singerlist">
+  <div class="singerlist" ref="singerlist">
     <span class="title">热门歌手</span>
     <van-cell-group ref="list">
       <van-cell center v-for="(singer,idx) of singerList" :key="'singer'+idx" clickable @click="select(singer)">
@@ -15,6 +15,9 @@
         </template>
       </van-cell>
     </van-cell-group>
+    <div class="allsinger" v-if="sgList.allSinger || !sgList.isSingerOk">
+      {{ sgList.allSinger ? '数据加载完成' : !sgList.isSingerOk ? '数据加载中...' : '' }}
+    </div>
     <loading v-if="!singerList"></loading>
   </div>
 </template>
@@ -25,10 +28,33 @@ import Loading from '../../Loading/Loading'
 export default {
   components: { Loading },
   mixins: [playListMixin],
+  data () {
+    return {
+      isSingerOk: false
+    }
+  },
   props: {
-    singerList: Array
+    singerList: Array,
+    sgList: Object
+  },
+  mounted () {
+    window.addEventListener('scroll', () => {
+      this.singerScroll()
+    }, true)
   },
   methods: {
+    singerScroll () {
+      if (this.$route.path === '/singer') {
+        const distTop = this.$refs.singerlist.getBoundingClientRect().top
+        const scrollHeight = document.documentElement.clientHeight || document.body.scrollHeight
+        const singerListHeight = this.$refs.singerlist.offsetHeight
+        if (singerListHeight + distTop - scrollHeight === 0 && this.sgList.isSingerOk === this.isSingerOk) {
+          this.$emit('getSingerList')
+          return
+        }
+        return false
+      }
+    },
     select (singer) {
       this.$emit('select', singer)
     },
@@ -40,16 +66,17 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="less" scoped>
   .iconfont {
     font-size: 1.3rem!important;
     color: #ee0a24!important;
   }
   .singerlist {
-    position: absolute;
-    top: 123px;
-    left: 0;
-    right: 0;
+    margin-top: 123px;
+    .allsinger {
+      text-align: center;
+      padding: 15px 0;
+    }
   }
   .title {
     display: block !important;

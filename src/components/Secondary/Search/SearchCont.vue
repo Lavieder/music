@@ -36,8 +36,8 @@ export default {
       this.$parent.setWord(keyword)
     },
     clearHis () {
-      this.searchHistory = []
       localStorage.removeItem('searchWord')
+      this.searchHistory = []
     }
   }
 }

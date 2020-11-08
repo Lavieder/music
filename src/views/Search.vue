@@ -69,6 +69,9 @@ export default {
     },
     // enter键搜索数据
     search () {
+      if (this.keyword === '') {
+        return
+      }
       this.axios.post('/api/search/word', { query: this.keyword }).then((res) => {
         if (res.data) {
           this.searchData = this.genSearch(res.data)
@@ -82,6 +85,7 @@ export default {
       this.axios.post('/api/search/shall', { query: this.keyword, page: this.page }).then((res) => {
         if (res.data) {
           this.searchAllData = res.data
+          console.log(this.searchAllData)
         } else if (res.data === 0) {
           return ''
         }
@@ -153,7 +157,13 @@ export default {
   },
   watch: {
     keyword () {
-      this.search()
+      let timer = null
+      if (timer) {
+        clearTimeout(timer)
+      }
+      timer = setTimeout(() => {
+        this.search()
+      }, 200)
     }
   }
 

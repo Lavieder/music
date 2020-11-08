@@ -12,11 +12,11 @@ const state = {
   gedan: {},
   rank: {},
   loading: false, // loading动画
-  loginInfo: {},
-  isLogin: false, // 是否登录
-  currentUser: '',
-  uName: localStorage.getItem('uName'),
-  token: localStorage.getItem('token')
+  loginInfo: JSON.parse(localStorage.getItem('user')) || {},
+  playHistory: JSON.parse(localStorage.getItem('playHistory')) || [],
+  favoriteList: [],
+  collectGedanList: [],
+  createGedanList: []
 }
 
 export default state

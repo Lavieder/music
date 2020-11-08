@@ -6,6 +6,7 @@ import Singer from '../views/Singer'
 import Gedan from '../views/Gedan'
 import RankBoard from '../views/RankBoard'
 import Login from '../views/Login'
+import Register from '../views/Register'
 import Search from '../views/Search'
 import SingerDetail from '../components/Secondary/Singer/Singer-detail/Singer-detail'
 import AlbumDetail from '../components/Secondary/Singer/Singer-detail/AlbumDetail/AlbumDetail'
@@ -22,6 +23,11 @@ const routes = [
     component: Login
   },
   {
+    path: '/register',
+    name: 'register',
+    component: Register
+  },
+  {
     path: '/',
     name: 'main',
     component: Main,
@@ -31,6 +37,8 @@ const routes = [
     ]
   },
   { path: '/user/detail', component: MyInfo },
+  { path: '/user/like', component: GedanDetail },
+  { path: '/user/recently', component: GedanDetail },
   {
     path: '/todayrec',
     name: 'todaySong',

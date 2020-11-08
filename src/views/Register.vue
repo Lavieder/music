@@ -1,41 +1,37 @@
 <template>
-  <div class="login">
+  <div class="register">
     <go-back-header></go-back-header>
     <div class="main">
       <van-image :src="loginBg" lazy-load></van-image>
       <van-form>
-        <van-field
-          v-model="formData.uName"  placeholder="编号 / 用户名"
+        <van-field v-model="formData.uName" placeholder="编号 / 用户名"
           label-class="label-justify" :rules="[{ required: true }]"
         >
           <template #left-icon>
             <i class="iconfont">&#xe60e;</i>
           </template>
         </van-field>
-        <van-field
-          v-model="formData.pwd" :type="pwdType" label-class="label-justify" placeholder="密码"
+        <van-field v-model="formData.pwd" :type="pwdType" label-class="label-justify" placeholder="密码"
           :rules="[{ required: true }]" :right-icon="rIcon" @click-right-icon="showPwd"
         >
           <template #left-icon>
             <i class="iconfont">&#xe605;</i>
           </template>
         </van-field>
+        <van-field v-model="formData.okPwd" :type="pwdOkType" label-class="label-justify" placeholder="确认密码"
+          :rules="[{ required: true }]" :right-icon="rOkIcon" @click-right-icon="showOkPwd"
+        >
+          <template #left-icon>
+            <i class="iconfont">&#xe605;</i>
+          </template>
+        </van-field>
+        <van-button type="info" block round @click="handleRegister">
+          <pre>注   册</pre>
+        </van-button>
       </van-form>
-      <van-button type="info" block round @click="checkLogin">
-        <pre>登   录</pre>
-      </van-button>
-      <div class="other-opr">
-        <div>
-          <router-link to="/register">立即注册</router-link>
-        </div>
-        <div class="forget-pwd">
-          <router-link to="">忘记密码？</router-link>
-        </div>
-      </div>
     </div>
   </div>
 </template>
-
 <script>
 import Vue from 'vue'
 import { Toast } from 'vant'
@@ -49,10 +45,13 @@ export default {
       loginBg: require('../assets/images/loginBg.png'),
       formData: {
         uName: '',
-        pwd: ''
+        pwd: '',
+        okPwd: ''
       },
       pwdType: 'password',
+      pwdOkType: 'password',
       rIcon: 'closed-eye',
+      rOkIcon: 'closed-eye',
       userInfo: []
     }
   },
@@ -66,24 +65,33 @@ export default {
         this.rIcon = 'closed-eye'
       }
     },
+    showOkPwd () {
+      if (this.pwdOkType === 'password') {
+        this.pwdOkType = 'text'
+        this.rOkIcon = 'eye-o'
+      } else {
+        this.pwdOkType = 'password'
+        this.rOkIcon = 'closed-eye'
+      }
+    },
 
-    checkLogin () {
-      this.axios.post('/api/login', this.formData).then((res) => {
-        if (res.data.isOk === '1') {
-          this.userInfo = res.data.user
-          localStorage.setItem('user', JSON.stringify(this.userInfo))
-          localStorage.token = res.data.tk
-          this.setLoginInfo(this.userInfo)
-          setTimeout(() => {
-            this.$router.push('/')
-          }, 200)
+    handleRegister () {
+      if (this.formData.pwd !== this.formData.okPwd) {
+        Toast.fail('2次密码不一样')
+        return false
+      }
+      this.axios.post('/api/reg', this.formData).then((res) => {
+        if (res.data === 1) {
+          Toast.fail('注册成功，请登录')
+          this.$router.push('/login')
+        } else if (res.data === 2) {
+          Toast.fail('已有此用户, 请登录')
         } else {
-          console.log(res)
-          Toast.fail('密码或账号错误')
+          Toast.fail('注册失败，请重新注册')
         }
       }).catch((err) => {
         console.log(err)
-        Toast.fail('登录异常！')
+        Toast.fail('注册异常！')
       })
     },
     ...mapMutations({
@@ -95,9 +103,8 @@ export default {
   }
 }
 </script>
-
 <style lang="less">
-  .login {
+  .register {
     width: 100vw;
     height: 100vh;
     background-color: #f6f6f6;
@@ -148,19 +155,11 @@ export default {
             font-size: 1.2rem;
           }
         }
-      }
-      .van-button--block {
-        width: 90vw;
-        margin: 1rem auto 0;
-        background-color: #48c3d3;
-        border: 0;
-      }
-      .other-opr {
-        padding: 12px 20px;
-        display: flex;
-        justify-content: space-between;
-        a {
-          color: #555555;
+        .van-button--block {
+          width: 90vw;
+          margin: 1rem auto 0;
+          background-color: #48c3d3;
+          border: 0;
         }
       }
     }

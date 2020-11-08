@@ -4,10 +4,10 @@
       <div class="face_nick">
         <img :src="getFace" alt="my" @click="toLogin()">
         <div class="toMyInfo" @click="toLogin()">
-          <span class="nick">{{ loginInfo.length ? loginInfo[0].nickName : '未登录' }}</span>
+          <span class="nick">{{ !loginInfo.uid ? '未登录' : loginInfo.nickName == null ? loginInfo.uName : loginInfo.nickName }}</span>
           <i class="iconfont icon-xiangyou"></i>
         </div>
-        <div class="guanz_fens" v-if="loginInfo.length">
+        <div class="guanz_fens" v-if="loginInfo.uid">
           <span class="name">关注 <span class="num"> 3 </span></span> |
           <span class="name">粉丝 <span class="num"> 5 </span></span>
         </div>
@@ -17,9 +17,18 @@
       <div class="my_ms">
         <div class="title">我的音乐</div>
         <div class="ms_cont">
-          <div class="m_box"><span>我喜欢的音乐</span></div>
-          <div class="m_box"><span>最近播放</span></div>
-          <div class="m_box"><span>我的评论</span></div>
+          <div class="m_box my-like" @click="goMyLike">
+            <span>
+              <i class="iconfont icon-xihuan_on"></i>
+              <span class="m-text">我喜欢的音乐</span>
+            </span>
+          </div>
+          <div class="m_box" @click="goRecentlyPlay">
+            <span>
+              <i class="iconfont icon-lishijilu"></i>
+              <span class="m-text">最近播放</span>
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -29,11 +38,11 @@
           <div class="gdt">
             <span class="gdtl">
               <span v-for="(t, i) of title" :key="i" :class="getClass(i)" @click="gedanSwitch(i)">{{ t }}
-                <span class="num" v-if="i === 0">{{ userGedan.length }}</span>
-                <span class="num" v-if="i === 1">1</span>
+                <span class="num" v-if="i === 0">{{ userCreateGedan.length }}</span>
+                <span class="num" v-if="i === 1">{{ userCollectGedan.length }}</span>
               </span>
             </span>
-            <span class="gdtr" @click="piLiang" v-if="userGedan.length">
+            <span class="gdtr" @click="piLiang" v-if="userCreateGedan.length">
               <span class="quanxuan" v-if="piliang" @click.stop="allChecked()">
                 <span>{{ this.allSelect ? '取消' : '全选' }}</span>
               </span>
@@ -43,9 +52,9 @@
           </div>
         </div>
         <div class="gdlist">
-          <div class="wdgd" v-show="wdgd === act">
+          <div class="wdgd" v-if="wdgd === act">
             <div>
-              <div class="gditem van-cell--clickable" v-for="(item, i) of userGedan" :key="i" @click="select(item)">
+              <div class="gditem van-cell--clickable" v-for="(item, i) of userCreateGedan" :key="i" @click="select(item, act)">
                   <img :src="'/storage/'+item.gdCover">
                   <div class="text_num">
                     <div>{{ item.gdTitle }}</div>
@@ -56,39 +65,29 @@
                 </div>
               </div>
             </div>
-            <div class="gditem van-cell--clickable" v-if="loginInfo.length" ref="gditem" @click="show = true">
+            <div class="gditem van-cell--clickable" v-if="loginInfo.uid" ref="gditem" @click="show = true">
               <div class="gdCover">
               </div>
               <div class="text_num">
                 <div>创建歌单</div>
               </div>
             </div>
-            <div class="gditem wei" v-if="!loginInfo.length">
+            <div class="gditem wei" v-if="!loginInfo.uid">
               <span>快来登录啊！</span>
             </div>
-            <van-dialog v-model="show" title="新建歌单" show-cancel-button confirm-button-color="#f41919"
-                :show-confirm-button="showButton"
-                @confirm="createMyGedan(inputTxt)"
-            >
-              <input type="text" class="inputTxt" v-model="inputTxt" maxlength="xianzhiNum">
-              <span :class="inputTxt ? 'xianzhi' : 'xianzhi xianzhi2'" ref="xianzhi">{{ xianzhiNum }}</span>
-              <span class="shanc" v-show="inputTxt" @click="clearTxt">
-                <i class="iconfont icon-shanchu"></i>
-              </span>
-            </van-dialog>
           </div>
-          <div class="scgd" v-show="scgd === act">
-            <div class="gditem van-cell--clickable" ref="gditem" v-if="loginInfo.length">
-              <img src='/storage/gedanCover/6.jpg' alt="">
+          <div class="scgd" v-if="scgd === act && loginInfo.uid">
+            <div class="gditem van-cell--clickable" v-for="(item, i) of userCollectGedan" :key="i" @click="select(item, act)" ref="gditem">
+              <img :src="'/storage/'+item.gdCover">
               <div class="text_num">
-                <div>这是一个真的歌单123</div>
-                <div class="num">5首</div>
+                <div>{{ item.gdTitle }}</div>
+                <div class="num">{{ item.song.length }}首</div>
               </div>
               <div class="piliang" v-if="piliang">
-                <input type="checkbox" v-model="allSelect">
+                <input type="checkbox" :value="item.gdid" @click.stop="onlyChecked(item.gdid, $event)" ref="checkbox">
               </div>
             </div>
-            <div class="gditem wei" v-if="!loginInfo.length">
+            <div class="gditem wei" v-if="!loginInfo.uid">
               <span>快来登录啊！</span>
             </div>
           </div>
@@ -99,16 +98,29 @@
         </div>
       </div>
     </div>
+    <van-dialog v-model="show" title="新建歌单" show-cancel-button confirm-button-color="#f41919"
+        :show-confirm-button="showButton" @confirm="createMyGedan(inputTxt)"
+    >
+      <input type="text" class="inputTxt" v-model="inputTxt" maxlength="xianzhiNum">
+      <span :class="inputTxt ? 'xianzhi' : 'xianzhi xianzhi2'" ref="xianzhi">{{ xianzhiNum }}</span>
+      <span class="shanc" v-show="inputTxt" @click="clearTxt">
+        <i class="iconfont icon-shanchu"></i>
+      </span>
+    </van-dialog>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapMutations } from 'vuex'
 import { playListMixin } from '../../../JS/mixin'
 export default {
   mixins: [playListMixin],
   props: {
-    userGedan: {
+    userCreateGedan: {
+      type: Array,
+      default: () => []
+    },
+    userCollectGedan: {
       type: Array,
       default: () => []
     },
@@ -130,8 +142,7 @@ export default {
       piliang: false,
       offsetTop: 0,
       allSelect: false,
-      checkedList: [],
-      delShow: false
+      checkedList: []
     }
   },
   mounted () {
@@ -150,13 +161,10 @@ export default {
       'currentUser'
     ]),
     getFace () {
-      return this.loginInfo.length ? '/storage/' + this.loginInfo[0].faceUrl : '/storage/face/default.jpg'
+      return this.loginInfo.uid ? '/storage/' + this.loginInfo.faceUrl : '/storage/face/default.jpg'
     },
     getFaceCover () {
-      return this.loginInfo.length ? '/storage/' + this.loginInfo[0].faceUrl : ''
-    },
-    piliangDel () {
-      return this.piliang ? 'iconfont icon-shanc shanc' : 'iconfont icon-piliang'
+      return this.loginInfo.uid ? '/storage/' + this.loginInfo.faceUrl : ''
     },
     delNotice () {
       return this.message.success !== '' ? this.showMessage() : ''
@@ -189,7 +197,7 @@ export default {
       }
     },
     toLogin () {
-      if (this.loginInfo.length) {
+      if (this.loginInfo.uid) {
         this.$router.push({
           path: '/user/detail'
         })
@@ -199,53 +207,75 @@ export default {
         })
       }
     },
+    // 跳转到我喜欢的歌曲
+    goMyLike () {
+      if (this.loginInfo.uid) {
+        this.$router.push({
+          path: '/user/like'
+        })
+      } else {
+        this.message.success = '你还未登录'
+      }
+    },
+    // 跳转到最近播放
+    goRecentlyPlay () {
+      this.$router.push({
+        path: '/user/recently'
+      })
+    },
     // 批量删除
     piLiang () {
       this.piliang = !this.piliang
     },
     // 单击复选框
     onlyChecked (gdid, e) {
-      // this.allSelect = !this.allSelect
       if (e.target.checked) {
         this.checkedList.push(gdid)
       } else {
         const gdidIndex = this.checkedList.indexOf(gdid)
         this.checkedList.splice(gdidIndex, 1)
       }
-      if (this.checkedList.length === this.userGedan.length) {
+      if (this.checkedList.length === this.userCreateGedan.length || this.checkedList.length === this.userCollectGedan.length) {
         this.allSelect = true
       } else {
         this.allSelect = false
       }
-      console.log(this.checkedList)
-      console.log(this.checkedList.length)
-      console.log(this.userGedan.length)
     },
     // 全选
     allChecked () {
-      this.allSelect = !this.allSelect
       const _this = this
-      this.$refs.checkbox.forEach(function (ele) {
-        ele.checked = !ele.checked
+      _this.allSelect = !_this.allSelect
+      _this.$refs.checkbox.forEach(function (ele) {
+        if (_this.allSelect) {
+          ele.checked = true
+        } else {
+          ele.checked = false
+        }
+        const gdidIndex = _this.checkedList.indexOf(parseInt(ele.value))
         if (ele.checked) {
+          if (gdidIndex !== -1) {
+            return
+          }
           _this.checkedList.push(parseInt(ele.value))
         } else {
-          const gdidIndex = _this.checkedList.indexOf(parseInt(ele.value))
           _this.checkedList.splice(gdidIndex, 1)
         }
       })
-      console.log(this.checkedList)
     },
     // 点击删除按钮，向后端发送对应的歌单gdid
     delGedan () {
-      if (this.checkedList.length === 0) {
+      if (!this.checkedList.length) {
         this.showMessage()
       } else {
-        this.$emit('delGedan', this.checkedList)
+        this.$emit('delGedan', this.checkedList, this.act)
       }
     },
     // 显示成功/失败提示文字
     showMessage () {
+      if (this.message.success === '删除成功' || this.message.fail === '删除失败') {
+        this.piliang = false
+      }
+      this.clearTxt()
       this.$refs.delNotice.style.opacity = 1
       this.$refs.delNotice.style.zIndex = 1
       this.$refs.delNotice.style.transitionDuration = '500ms'
@@ -258,18 +288,28 @@ export default {
       return this.act === i ? 'act' : 'def'
     },
     gedanSwitch (i) {
+      if (this.act === i) {
+        return
+      }
       this.act = i
+      this.checkedList = []
+      this.allSelect = false
+      this.piliang = false
     },
     clearTxt () {
       this.inputTxt = ''
     },
-    select (item) {
+    select (item, act) {
+      item.act = act
       this.$emit('selectItem', item)
     },
     // 创建歌单
     createMyGedan (inputTxt) {
       this.$emit('createMyGedan', inputTxt)
     },
+    ...mapMutations({
+      setFavoriteList: 'SET_FAVORITE_LIST'
+    }),
     handlePlayList (playList) {
       const paddingBottom = playList.length > 0 ? '55px' : ''
       this.$refs.mygedan.style.paddingBottom = paddingBottom
@@ -296,7 +336,6 @@ export default {
   .my {
     width: 100vw;
     font-size: 0.9em;
-    position: relative;
     .nick_info::before {
       content: '';
       height: 100%;
@@ -365,24 +404,74 @@ export default {
       color: #5c5c5c;
       font-size: 0.8rem;
     }
+    .van-dialog {
+      top: 50%;
+      .van-dialog__header {
+        font-size: 0.95em;
+      }
+      .van-dialog__content {
+        position: relative;
+        width: 90%;
+        margin: 0 auto;
+        border-bottom: 1px solid #525252;
+        .inputTxt {
+          height: 2rem;
+          display: block;
+          width: 83%;
+          outline: 0;
+          border: 0;
+        }
+        .xianzhi {
+          position: absolute;
+          bottom: 0.6rem;
+          right: 1.8rem;
+          font-size: 0.92em;
+          color: #474747;
+        }
+        .xianzhi2 {
+          right: 1.3rem;
+        }
+        .shanc {
+          position: absolute;
+          bottom: 0.2rem;
+          right: 0;
+          .iconfont {
+            font-size: 1.7em;
+          }
+        }
+      }
+    }
     .my_music {
-      height: 11rem;
+      height: 14rem;
       font-size: 0.9rem;
       .my_ms {
         padding: 0 1rem;
         box-sizing: border-box;
         .ms_cont {
           width: 100%;
-          display: flex;
-          justify-content: space-between;
+          .my-like {
+            margin-bottom: 10px;
+          }
           .m_box {
-            height: 8rem;
-            width: 31.8%;
+            height: 5rem;
+            width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
             border: 1px solid #ccc;
             border-radius: 5px;
+            span {
+              text-align: center;
+              .iconfont {
+                font-size: 1.6rem;
+              }
+              .icon-xihuan_on {
+                color: #ee0a24;
+              }
+              .m-text {
+                display: block;
+              }
+            }
           }
         }
       }
@@ -497,43 +586,6 @@ export default {
               }
             }
           }
-          .van-dialog {
-            top: 50%;
-            .van-dialog__header {
-              font-size: 0.95em;
-            }
-            .van-dialog__content {
-              position: relative;
-              width: 90%;
-              margin: 0 auto;
-              border-bottom: 1px solid #525252;
-              .inputTxt {
-                height: 2rem;
-                display: block;
-                width: 83%;
-                outline: 0;
-                border: 0;
-              }
-              .xianzhi {
-                position: absolute;
-                bottom: 0.6rem;
-                right: 1.8rem;
-                font-size: 0.92em;
-                color: #474747;
-              }
-              .xianzhi2 {
-                right: 1.3rem;
-              }
-              .shanc {
-                position: absolute;
-                bottom: 0.2rem;
-                right: 0;
-                .iconfont {
-                  font-size: 1.7em;
-                }
-              }
-            }
-          }
           .del-notice {
             position: absolute;
             top: 2.5rem;
@@ -547,10 +599,6 @@ export default {
             z-index: -1;
             opacity: 0;
             transition: all .5s;
-          }
-          .del-show {
-            z-index: 1;
-            opacity: 1;
           }
         }
       }

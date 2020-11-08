@@ -22,10 +22,14 @@ export const SET_LOADING = 'SET_LOADING'
 
 export const SET_LOGININFO = 'SET_LOGININFO'
 
-export const SET_UNAME = 'SET_UNAME'
-
 export const SET_TOKEN = 'SET_TOKEN'
 
-export const SET_CURRENT_USER = 'SET_CURRENT_USER'
-
 export const SET_IS_LOGIN = 'SET_IS_LOGIN'
+
+export const SET_PLAY_HISTORY = 'SET_PLAY_HISTORY'
+
+export const SET_FAVORITE_LIST = 'SET_FAVORITE_LIST'
+
+export const SET_COLLECT_LIST = 'SET_COLLECT_LIST'
+
+export const SET_CREATE_LIST = 'SET_CREATE_LIST'

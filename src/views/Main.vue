@@ -20,7 +20,7 @@
           </keep-alive>
         </div>
         <div v-if="active == 0" ref="my">
-          <my :userGedan="userGedan" :message="message" @selectItem="selectItem" @delGedan="delGedan"  @createMyGedan="createMyGedan"></my>
+          <my :userCreateGedan="userCreateGedan" :userCollectGedan="userCollectGedan" :message="message" @selectItem="selectItem" @delGedan="delGedan"  @createMyGedan="createMyGedan"></my>
         </div>
       </div>
       <router-view></router-view>
@@ -37,7 +37,8 @@ export default {
   data () {
     return {
       active: 1,
-      userGedan: [],
+      userCreateGedan: [],
+      userCollectGedan: [],
       message: {
         success: '',
         fail: ''
@@ -50,16 +51,17 @@ export default {
       'playing'
     ]),
     getFace () {
-      return this.loginInfo.length ? '/storage/' + this.loginInfo[0].faceUrl : '/storage/face/default.jpg'
+      return this.loginInfo.uid ? '/storage/' + this.loginInfo.faceUrl : '/storage/face/default.jpg'
     }
   },
   mounted () {
     this.tabNav()
     this.getUserGedan()
+    this.getMyLikeSongs()
   },
   methods: {
     toLogin () {
-      if (this.loginInfo.length) {
+      if (this.loginInfo.uid) {
         this.$router.push({
           path: '/user/detail'
         })
@@ -103,34 +105,52 @@ export default {
       }
     },
     getUserGedan () {
-      if (this.loginInfo.length) {
-        this.axios.post('/api/user/ugd', this.loginInfo[0]).then((res) => {
+      if (this.loginInfo.uid) {
+        this.axios.post('/api/user/ugd', { uid: this.loginInfo.uid }).then((res) => {
           if (res.data) {
-            this.userGedan = res.data[0].gedan
+            this.userCreateGedan = res.data.createGd[0].gedan
+            this.userCollectGedan = res.data.collectGd[0].gedan
+            this.setCreateList(this.userCreateGedan)
+            this.setCollectList(this.userCollectGedan)
           } else {
             return 0
           }
         })
       }
     },
+    // 创建歌单
     createMyGedan (inputTxt) {
-      this.axios.post('/api/user/cmgd', { gdTitle: inputTxt, uid: this.loginInfo[0].uid }).then((res) => {
+      this.axios.post('/api/user/cmgd', { gdTitle: inputTxt, uid: this.loginInfo.uid }).then((res) => {
         if (res.data === 1) {
           this.message.success = '创建成功'
           this.getUserGedan()
         } else {
           this.message.fail = '创建失败'
-          return '创建失败'
         }
       })
     },
-    delGedan (gdlist) {
-      this.axios.post('/api/user/delgd', { gdid: gdlist, uid: this.loginInfo[0].uid }).then((res) => {
+    // 删除歌单
+    delGedan (gdlist, source) {
+      this.axios.post('/api/user/delgd', { gdid: gdlist, uid: this.loginInfo.uid, source: source }).then((res) => {
         if (res.data !== '0') {
           this.message.success = '删除成功'
           this.getUserGedan()
         } else {
           this.message.fail = '删除失败'
+        }
+      })
+    },
+    // 获取喜欢的音乐
+    getMyLikeSongs () {
+      if (!this.loginInfo.uid) {
+        return
+      }
+      this.axios.post('/api/user/myfs', { uid: this.loginInfo.uid }).then((res) => {
+        if (res.data) {
+          this.MyLikeSongs = res.data
+          this.setFavoriteList(this.MyLikeSongs[0].song)
+        } else {
+          return 0
         }
       })
     },
@@ -141,7 +161,10 @@ export default {
       this.setGedan(item)
     },
     ...mapMutations({
-      setGedan: 'SET_GEDAN'
+      setGedan: 'SET_GEDAN',
+      setFavoriteList: 'SET_FAVORITE_LIST',
+      setCollectList: 'SET_COLLECT_LIST',
+      setCreateList: 'SET_CREATE_LIST'
     })
   }
 }

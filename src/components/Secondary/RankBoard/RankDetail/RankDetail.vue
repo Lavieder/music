@@ -2,7 +2,7 @@
   <transition name="slide" appear>
     <div class="rankdetail">
       <go-back-header :title="rank.rbTitle"></go-back-header>
-      <rank-detail-data :rankDetail="rankDetail" :rkBgImage="rkBgImage" @selectItem="selectItem"></rank-detail-data>
+      <rank-detail-data :rank-detail="rankDetail" :rkBgImage="rkBgImage" @selectItem="selectItem"></rank-detail-data>
     </div>
   </transition>
 </template>
